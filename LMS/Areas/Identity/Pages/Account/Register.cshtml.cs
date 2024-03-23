@@ -194,7 +194,71 @@ namespace LMS.Areas.Identity.Pages.Account
         /// <returns>The uID of the new user</returns>
         string CreateNewUser( string firstName, string lastName, DateTime DOB, string departmentAbbrev, string role )
         {
-            return "unknown";
+            // Generating a random unique uID
+            bool exists = true;
+            string uID = "u";
+            int randomNumber = 0;
+
+            while (exists)
+            {
+                string random_uID = "u";
+
+                Random rand = new Random();
+                randomNumber = rand.Next(1000000, 10000000); // Generate a random number between 1000000 and 9999999
+                random_uID += randomNumber.ToString();
+
+                // Check if the random number exists in the database
+                exists = db.Administrators.Any(x => x.UId == random_uID);
+            }
+
+            uID += randomNumber.ToString();
+
+
+            // Getting the department ID
+            var query = from d in db.Departments
+                        where d.Subject == departmentAbbrev
+                        select d;
+
+            uint deptID = 0;
+            foreach( var d in query)
+            {
+                deptID = query.First().DId;
+            }
+
+
+            if (role.ToLower() == "administrator")
+            {
+                Administrator admin = new Administrator();
+
+                admin.UId = uID;
+                admin.FName = firstName;
+                admin.LName = lastName;
+                admin.Dob = DateOnly.FromDateTime(DOB);
+
+                db.Administrators.Add(admin);
+                db.SaveChanges();
+            }
+            else if(role.ToLower() == "professor")
+            {
+                Professor prof = new Professor();
+
+                prof.UId = uID;
+                prof.FName = firstName;
+                prof.LName = lastName;
+                prof.Dob = DateOnly.FromDateTime(DOB);
+                prof.WorksIn = deptID;
+            }
+            else if(role.ToLower() == "student")
+            {
+                Student student = new Student();
+
+                student.UId = uID;
+                student.FName = firstName;
+                student.LName = lastName;
+                student.Dob = DateOnly.FromDateTime(DOB);
+                student.Major = deptID;
+            }
+            return uID;
         }
 
         /*******End code to modify********/
