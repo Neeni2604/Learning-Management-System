@@ -42,7 +42,7 @@ namespace LMS.Controllers
         /*******Begin code to modify********/
 
         /// <summary>
-        /// Create a department which is uniquely identified by it's subject code
+        /// Create a department which is uniquely identified by its subject code
         /// </summary>
         /// <param name="subject">the subject code</param>
         /// <param name="name">the full name of the department</param>
@@ -56,7 +56,7 @@ namespace LMS.Controllers
             db.Departments.Add(d);
             db.SaveChanges();
 
-            return Json(new { success = false});
+            return Json(new { success = true});
         }
 
 

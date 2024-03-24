@@ -37,6 +37,8 @@
         dataType: 'json',
         data: { uid: '@User.Identity.Name' },
         success: function (data, status) {
+             alert(JSON.stringify(data));
+
 
           if (data.success == false) {
             alert("An error occured when loading user's information");
@@ -81,7 +83,7 @@
         data: { uid: '@User.Identity.Name' },
         success: function (data, status) {
 
-          //alert(JSON.stringify(data));
+          alert(JSON.stringify(data));
 
           $.each(data, function (i, item) {
 

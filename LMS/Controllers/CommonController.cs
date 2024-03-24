@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LMS.Models.LMSModels;
@@ -29,8 +30,16 @@ namespace LMS.Controllers
         /// </summary>
         /// <returns>The JSON array</returns>
         public IActionResult GetDepartments()
-        {            
-            return Json(null);
+        {
+            var query = from d in db.Departments
+                        select new
+                        {
+                            name = d.Name,
+                            subject = d.Subject
+                        };
+
+
+            return Json(query.ToArray());
         }
 
 
