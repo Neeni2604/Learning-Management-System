@@ -207,8 +207,8 @@ namespace LMS.Areas.Identity.Pages.Account
                 randomNumber = rand.Next(1000000, 10000000); // Generate a random number between 1000000 and 9999999
                 random_uID += randomNumber.ToString();
 
-                // Check if the random number exists in the database
-                exists = db.Administrators.Any(x => x.UId == random_uID);
+                // Check if the random number (uID) exists in the database
+                exists = (db.Administrators.Any(x => x.UId == random_uID) || db.Professors.Any(x => x.UId == random_uID) || db.Students.Any(x => x.UId == random_uID));
             }
 
             uID += randomNumber.ToString();
@@ -220,11 +220,11 @@ namespace LMS.Areas.Identity.Pages.Account
                         select d;
 
             uint deptID = 0;
-            foreach( var d in query)
-            {
-                deptID = query.First().DId;
-            }
 
+            foreach(Department d in query)
+            {
+                deptID=d.DId;
+            }
 
             if (role.ToLower() == "administrator")
             {
@@ -247,6 +247,9 @@ namespace LMS.Areas.Identity.Pages.Account
                 prof.LName = lastName;
                 prof.Dob = DateOnly.FromDateTime(DOB);
                 prof.WorksIn = deptID;
+
+                db.Professors.Add(prof);
+                db.SaveChanges();
             }
             else if(role.ToLower() == "student")
             {
@@ -257,6 +260,9 @@ namespace LMS.Areas.Identity.Pages.Account
                 student.LName = lastName;
                 student.Dob = DateOnly.FromDateTime(DOB);
                 student.Major = deptID;
+
+                db.Students.Add(student);
+                db.SaveChanges();
             }
             return uID;
         }
