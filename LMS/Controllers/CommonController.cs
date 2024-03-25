@@ -90,8 +90,28 @@ namespace LMS.Controllers
         /// <param name="number">The course number, as in 5530</param>
         /// <returns>The JSON array</returns>
         public IActionResult GetClassOfferings(string subject, int number)
-        {            
-            return Json(null);
+        {
+            var query = from c in db.Courses
+                        join cc in db.Classes
+                        on c.CId equals cc.CId
+                        into courseClass
+                        from cD in courseClass
+                        join p in db.Professors
+                        on cD.TaughtBy equals p.PId
+                        into fullOffering
+                        from fO in fullOffering
+                        select new
+                        {
+                            season = cD.SemesterSeason,
+                            year = cD.SemesterYear,
+                            location = cD.Location,
+                            start = cD.StartTime,
+                            end = cD.EndTime,
+                            fName = fO.FName,
+                            lname = fO.LName
+                        };
+
+            return Json(query.ToArray());
         }
 
         /// <summary>
@@ -107,8 +127,23 @@ namespace LMS.Controllers
         /// <param name="asgname">The name of the assignment in the category</param>
         /// <returns>The assignment contents</returns>
         public IActionResult GetAssignmentContents(string subject, int num, string season, int year, string category, string asgname)
-        {            
-            return Content("");
+        {
+            IEnumerable<string> query = from aC in db.Assignments
+                        join a in db.AssignmentCategories
+                        on aC.AcId equals a.AcId
+                        join c in db.Classes
+                        on a.ClassId equals c.ClassId
+                        join cc in db.Courses
+                        on c.CId equals cc.CId
+                        join d in db.Departments
+                        on cc.DId equals d.DId
+                        where d.Subject == subject && cc.Num == num && c.SemesterSeason == season
+                          && c.SemesterYear == year && a.Name == category && aC.AName == asgname
+                        select aC.Contents;
+
+
+
+            return Content(query.FirstOrDefault());
         }
 
 
