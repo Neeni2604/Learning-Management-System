@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 [assembly: InternalsVisibleTo( "LMSControllerTests" )]
@@ -50,12 +51,22 @@ namespace LMS.Controllers
         /// false if the department already exists, true otherwise.</returns>
         public IActionResult CreateDepartment(string subject, string name)
         {
+            var exists = db.Departments.FirstOrDefault(d => d.Subject == subject);
+            
+            if (exists != null)
+                return Json(new { success = false });
+
+
+            int startCount = db.Departments.Count();
+
             Department d = new Department();
             d.Subject = subject;
             d.Name = name;
             db.Departments.Add(d);
             db.SaveChanges();
 
+
+           
             return Json(new { success = true});
         }
 
@@ -70,8 +81,18 @@ namespace LMS.Controllers
         /// <returns>The JSON result</returns>
         public IActionResult GetCourses(string subject)
         {
+            var query = from c in db.Courses
+                        join d in db.Departments
+                        on c.DId equals d.DId
+                        where d.Subject == subject
+                        select new
+                        {
+                            number = c.Num,
+                            name = c.Name
+                        };
+
             
-            return Json(null);
+            return Json(query.ToArray());
         }
 
         /// <summary>
@@ -85,8 +106,19 @@ namespace LMS.Controllers
         /// <returns>The JSON result</returns>
         public IActionResult GetProfessors(string subject)
         {
+            var query = from p in db.Professors
+                        join d in db.Departments
+                        on p.WorksIn equals d.DId
+                        where d.Subject == subject
+                        select new
+                        {
+                            lname = p.LName,
+                            fname = p.FName,
+                            uid = p.UId
+                        };
+
             
-            return Json(null);
+            return Json(query.ToArray());
             
         }
 
@@ -102,8 +134,31 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}.
         /// false if the course already exists, true otherwise.</returns>
         public IActionResult CreateCourse(string subject, int number, string name)
-        {           
-            return Json(new { success = false });
+        {
+            var query = from d in db.Departments
+                        where d.Name == subject
+                        select d.DId;
+
+            var exists = db.Courses.FirstOrDefault(c => c.DId == query.FirstOrDefault() && c.Num == number);
+
+            if (exists != null)
+                return Json(new { success = false });
+
+            Course c = new Course(); 
+
+            c.Name = name;
+            c.Num = (uint)number;
+            c.DId = query.FirstOrDefault();
+
+
+            db.Courses.Add(c);
+            db.SaveChanges();
+
+            int endCount = db.Courses.Count();
+
+
+            return Json(new { success = true });
+
         }
 
 
@@ -125,7 +180,10 @@ namespace LMS.Controllers
         /// a Class offering of the same Course in the same Semester,
         /// true otherwise.</returns>
         public IActionResult CreateClass(string subject, int number, string season, int year, DateTime start, DateTime end, string location, string instructor)
-        {            
+        {     
+            
+
+
             return Json(new { success = false});
         }
 
