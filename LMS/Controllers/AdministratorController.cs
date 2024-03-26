@@ -136,7 +136,7 @@ namespace LMS.Controllers
         public IActionResult CreateCourse(string subject, int number, string name)
         {
             var query = from d in db.Departments
-                        where d.Name == subject
+                        where d.Subject == subject
                         select d.DId;
 
             var exists = db.Courses.FirstOrDefault(c => c.DId == query.FirstOrDefault() && c.Num == number);
@@ -191,18 +191,17 @@ namespace LMS.Controllers
                          select d.DId;
 
 
-            var existsInSemester = from c in db.Classes
-                                   join d in db.Courses
-                                   on c.CId equals d.DId
-                                   where c.SemesterSeason == season &&
-                                   c.SemesterYear == year &&
-                                   d.DId == getDId.FirstOrDefault() &&
-                                   d.Num == number
-                                   select c;
-
             var getCId = from co in db.Courses
                          where co.Num == number && co.DId == getDId.FirstOrDefault()
                          select co.CId;
+
+
+            var existsInSemester = from cla in db.Classes
+                                   where cla.SemesterSeason == season &&
+                                   cla.SemesterYear == year &&
+                                   cla.CId == getCId.FirstOrDefault()
+                                   select cla;
+
 
             if (existsInSemester.FirstOrDefault() != null)
                 return Json(new { success = false });
