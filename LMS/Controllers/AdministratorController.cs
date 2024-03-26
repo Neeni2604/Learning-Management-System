@@ -154,9 +154,6 @@ namespace LMS.Controllers
             db.Courses.Add(c);
             db.SaveChanges();
 
-            int endCount = db.Courses.Count();
-
-
             return Json(new { success = true });
 
         }
@@ -181,10 +178,51 @@ namespace LMS.Controllers
         /// true otherwise.</returns>
         public IActionResult CreateClass(string subject, int number, string season, int year, DateTime start, DateTime end, string location, string instructor)
         {     
-            
+            var locationTimeConflict = from c in db.Classes
+                                       where c.Location == location && c.SemesterSeason == season && c.SemesterYear == year && ((c.StartTime < TimeOnly.FromDateTime(end) && c.StartTime > TimeOnly.FromDateTime(start)) ||
+                                       (c.EndTime < TimeOnly.FromDateTime(end) && c.EndTime > TimeOnly.FromDateTime(start)))
+                                       select c;
+
+            if (locationTimeConflict.FirstOrDefault() != null)
+                return Json(new { success = false });
+
+            var getDId = from d in db.Departments
+                         where d.Subject == subject
+                         select d.DId;
 
 
-            return Json(new { success = false});
+            var existsInSemester = from c in db.Classes
+                                   join d in db.Courses
+                                   on c.CId equals d.DId
+                                   where c.SemesterSeason == season &&
+                                   c.SemesterYear == year &&
+                                   d.DId == getDId.FirstOrDefault() &&
+                                   d.Num == number
+                                   select c;
+
+            var getCId = from co in db.Courses
+                         where co.Num == number && co.DId == getDId.FirstOrDefault()
+                         select co.CId;
+
+            if (existsInSemester.FirstOrDefault() != null)
+                return Json(new { success = false });
+
+
+            Class cl = new Class();
+            cl.CId = getCId.FirstOrDefault();
+            cl.SemesterSeason = season;
+            cl.SemesterYear = (uint)year;
+            //cl.TaughtBy = (uint)int.Parse(instructor.Substring(1));
+            cl.TaughtBy = 2;
+            cl.StartTime = TimeOnly.FromDateTime(start);
+            cl.EndTime = TimeOnly.FromDateTime(end);
+            cl.Location = location;
+
+
+            db.Classes.Add(cl);
+            db.SaveChanges();
+
+            return Json(new { success = true});
         }
 
 
