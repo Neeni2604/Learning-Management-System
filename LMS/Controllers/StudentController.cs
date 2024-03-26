@@ -75,8 +75,28 @@ namespace LMS.Controllers
         /// <param name="uid">The uid of the student</param>
         /// <returns>The JSON array</returns>
         public IActionResult GetMyClasses(string uid)
-        {           
-            return Json(null);
+        {
+            var query = from s in db.Students
+                        join e in db.Enrolleds
+                        on s.SId equals e.SId
+                        join c in db.Classes
+                        on e.ClassId equals c.ClassId
+                        join co in db.Courses
+                        on c.CId equals co.CId
+                        join d in db.Departments
+                        on co.DId equals d.DId
+                        where s.UId == uid
+                        select new
+                        {
+                            subject = d.Subject,
+                            number = co.Num,
+                            name = co.Name,
+                            season = c.SemesterSeason,
+                            year = c.SemesterYear,
+                            grade = e.Grade
+                        };
+
+            return Json(query.ToArray());
         }
 
         /// <summary>
@@ -94,8 +114,25 @@ namespace LMS.Controllers
         /// <param name="uid"></param>
         /// <returns>The JSON array</returns>
         public IActionResult GetAssignmentsInClass(string subject, int num, string season, int year, string uid)
-        {            
-            return Json(null);
+        {
+            var query = from sub in db.Submissions
+                        join s in db.Students
+                        on sub.SId equals s.SId
+                        join a in db.Assignments
+                        on sub.AId equals a.AId
+                        join ac in db.AssignmentCategories
+                        on a.AcId equals ac.AcId
+                        join c in db.Classes
+                        on ac.ClassId equals c.ClassId
+                        join co in db.Courses
+                        on c.CId equals co.CId
+                        join d in db.Departments
+                        on co.DId equals d.DId
+                        where s.UId == uid && d.Subject == subject && co.Num == num &&
+                              c.SemesterSeason == season && c.SemesterYear == year
+                        select a;
+ 
+            return Json(query.ToArray());
         }
 
 
@@ -119,7 +156,10 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}</returns>
         public IActionResult SubmitAssignmentText(string subject, int num, string season, int year,
           string category, string asgname, string uid, string contents)
-        {           
+        {      
+            
+
+
             return Json(new { success = false });
         }
 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 [assembly: InternalsVisibleTo( "LMSControllerTests" )]
@@ -118,7 +119,27 @@ namespace LMS_CustomIdentity.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetStudentsInClass(string subject, int num, string season, int year)
         {
-            return Json(null);
+            var query = from e in db.Enrolleds
+                        join s in db.Students
+                        on e.SId equals s.SId
+                        join c in db.Classes
+                        on e.ClassId equals c.ClassId
+                        join co in db.Courses
+                        on c.CId equals co.CId
+                        join d in db.Departments
+                        on co.DId equals d.DId
+                        where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year
+                        select new
+                        {
+                            fName = s.FName,
+                            lName = s.LName,
+                            uid = s.UId,
+                            dob = s.Dob,
+                            grade = e.Grade
+                        };
+
+
+            return Json(query.ToArray());
         }
 
 
@@ -141,7 +162,33 @@ namespace LMS_CustomIdentity.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetAssignmentsInCategory(string subject, int num, string season, int year, string category)
         {
-            return Json(null);
+            var aID = from a in db.Assignments
+                      join s in db.Submissions
+                      on a.AId equals s.AId
+                      select a.AId;
+
+            int submissionCount = db.Submissions.Count(submission => submission.AId == aID.FirstOrDefault());
+
+            var query = from ac in db.AssignmentCategories
+                        join c in db.Classes
+                        on ac.ClassId equals c.ClassId
+                        join a in db.Assignments
+                        on ac.AcId equals a.AcId
+                        join co in db.Courses
+                        on c.CId equals co.CId
+                        join d in db.Departments
+                        on co.DId equals d.DId
+                        where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year && ac.Name == category
+                        select new
+                        {
+                            aname = a.AName,
+                            cname = ac.Name,
+                            due = a.DueDate,
+                            submissions = submissionCount
+                        };
+
+
+            return Json(query.ToArray());
         }
 
 
@@ -159,7 +206,21 @@ namespace LMS_CustomIdentity.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetAssignmentCategories(string subject, int num, string season, int year)
         {
-            return Json(null);
+            var query = from ac in db.AssignmentCategories
+                        join c in db.Classes
+                        on ac.ClassId equals c.ClassId
+                        join co in db.Courses
+                        on c.CId equals co.CId
+                        join d in db.Departments
+                        on co.DId equals d.DId
+                        where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year
+                        select new
+                        {
+                            name = ac.Name,
+                            weight = ac.Weight
+                        };
+
+            return Json(query.ToArray());
         }
 
         /// <summary>

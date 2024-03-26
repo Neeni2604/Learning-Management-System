@@ -211,8 +211,7 @@ namespace LMS.Controllers
             cl.CId = getCId.FirstOrDefault();
             cl.SemesterSeason = season;
             cl.SemesterYear = (uint)year;
-            //cl.TaughtBy = (uint)int.Parse(instructor.Substring(1));
-            cl.TaughtBy = 2;
+            cl.TaughtBy = (uint)int.Parse(instructor.Substring(1));
             cl.StartTime = TimeOnly.FromDateTime(start);
             cl.EndTime = TimeOnly.FromDateTime(end);
             cl.Location = location;
