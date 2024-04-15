@@ -162,11 +162,27 @@ namespace LMS.Controllers
         /// <param name="uid">The uid of the student who submitted it</param>
         /// <returns>The submission text</returns>
         public IActionResult GetSubmissionText(string subject, int num, string season, int year, string category, string asgname, string uid)
-        {      
-            
+        {
+            IEnumerable<string> query = from s in db.Submissions
+                                        join a in db.Assignments
+                                        on s.AId equals a.AId
+                                        join ac in db.AssignmentCategories
+                                        on a.AcId equals ac.AcId
+                                        join cl in db.Classes
+                                        on ac.ClassId equals cl.ClassId
+                                        join c in db.Courses
+                                        on cl.CId equals c.CId
+                                        join st in db.Students
+                                        on s.SId equals st.SId
+                                        join d in db.Departments
+                                        on c.DId equals d.DId
+                                        where d.Subject == subject && c.Num == num &&
+                                        cl.SemesterSeason == season && cl.SemesterYear == year &&
+                                        ac.Name == category && a.AName == asgname && st.UId == uid
+                                        select s.Contents;
 
 
-            return Content("");
+            return Content(query.FirstOrDefault(""));
         }
 
 
