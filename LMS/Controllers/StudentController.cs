@@ -156,8 +156,30 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}</returns>
         public IActionResult SubmitAssignmentText(string subject, int num, string season, int year,
           string category, string asgname, string uid, string contents)
-        {      
-            
+        {
+            var query = from st in db.Students
+                        join e in db.Enrolleds
+                        on st.SId equals e.SId
+                        join cl in db.Classes
+                        on e.ClassId equals cl.ClassId
+                        join ac in db.AssignmentCategories
+                        on cl.ClassId equals ac.ClassId
+                        join a in db.Assignments
+                        on ac.AcId equals a.AcId
+                        join su in db.Submissions
+                        on a.AId equals su.AId
+                        select st;
+
+            // If a student is submitting for the first time, create a new submission and insert
+            // Else, delete the current submission and insert a new one
+            if (query.Count() == 0)
+            {
+                
+            }
+            else
+            {
+
+            }
 
 
             return Json(new { success = false });

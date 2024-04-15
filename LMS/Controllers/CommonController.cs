@@ -204,7 +204,47 @@ namespace LMS.Controllers
         /// </returns>
         public IActionResult GetUser(string uid)
         {    
-            
+            if(db.Administrators.Any(x => x.UId == uid))
+            {
+                var query = from a in db.Administrators
+                            where a.UId == uid
+                            select new
+                            {
+                                fname = a.FName,
+                                lname = a.LName,
+                                uid = a.UId
+                            };
+
+                return Json(query.ToArray());
+            }
+            else if(db.Professors.Any(x => x.UId == uid))
+            {
+                var query = from p in db.Professors
+                            where p.UId == uid
+                            select new
+                            {
+                                fname = p.FName,
+                                lname = p.LName,
+                                uid = p.UId,
+                                department = p.WorksIn
+                            };
+
+                return Json(query.ToArray());
+            }
+            else if (db.Students.Any(x => x.UId == uid))
+            {
+                var query = from s in db.Students
+                            where s.UId == uid
+                            select new
+                            {
+                                fname = s.FName,
+                                lname = s.LName,
+                                uid = s.UId,
+                                department = s.Major
+                            };
+
+                return Json(query.ToArray());
+            }
 
             return Json(new { success = false });
         }

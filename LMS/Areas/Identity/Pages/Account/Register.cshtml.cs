@@ -208,7 +208,7 @@ namespace LMS.Areas.Identity.Pages.Account
                 random_uID += randomNumber.ToString();
 
                 // Check if the random number (uID) exists in the database
-                exists = (db.Administrators.Any(x => x.UId == random_uID) || db.Professors.Any(x => x.UId == random_uID) || db.Students.Any(x => x.UId == random_uID));
+                exists = db.Administrators.Any(x => x.UId == random_uID) || db.Professors.Any(x => x.UId == random_uID) || db.Students.Any(x => x.UId == random_uID);
             }
 
             uID += randomNumber.ToString();
