@@ -157,32 +157,82 @@ namespace LMS.Controllers
         public IActionResult SubmitAssignmentText(string subject, int num, string season, int year,
           string category, string asgname, string uid, string contents)
         {
-            var query = from st in db.Students
-                        join e in db.Enrolleds
-                        on st.SId equals e.SId
-                        join cl in db.Classes
-                        on e.ClassId equals cl.ClassId
-                        join ac in db.AssignmentCategories
-                        on cl.ClassId equals ac.ClassId
-                        join a in db.Assignments
-                        on ac.AcId equals a.AcId
-                        join su in db.Submissions
-                        on a.AId equals su.AId
-                        select st;
+            // Check if submission exists
+            var get_sID = from st in db.Students
+                          where st.UId == uid
+                          select st.SId;
 
-            // If a student is submitting for the first time, create a new submission and insert
-            // Else, delete the current submission and insert a new one
-            if (query.Count() == 0)
+            
+            var get_aID = from a in db.Assignments
+                          join ac in db.AssignmentCategories on a.AcId equals ac.AcId
+                          join cl in db.Classes on ac.ClassId equals cl.ClassId
+                          join co in db.Courses on cl.CId equals co.CId
+                          join d in db.Departments on co.DId equals d.DId
+                          where d.Subject == subject && co.Num == num && cl.SemesterSeason == season &&
+                          cl.SemesterYear == year && ac.Name == category && a.AName == asgname
+                          select a.AId;
+
+
+            var submitted = from su in db.Submissions
+                            where su.SId == get_sID.FirstOrDefault() && su.AId == get_aID.FirstOrDefault()
+                            select su;
+
+            // If there is no submission for that student and assignment name, create a new submission and 
+            // insert it.
+            // Else, delete the existing submission, create a new submission and submit the new one
+            if(submitted.FirstOrDefault() == null)
             {
-                
+                Submission sub = new Submission();
+
+                sub.SubId = get_sID.FirstOrDefault();
+                sub.AId = get_aID.FirstOrDefault();
+                sub.Contents = contents;
+                sub.Score = 0;
+                sub.SubmissionTime = DateTime.Now;
+
+                db.Submissions.Add(sub);
+
+                db.SaveChanges();
+
+                return Json(new { success = true });
             }
             else
             {
+                // Getting the current submission
+                var getCurrentSubmission = from st in db.Students
+                                           join e in db.Enrolleds on st.SId equals e.SId
+                                           join cl in db.Classes on e.ClassId equals cl.ClassId
+                                           join co in db.Courses on cl.CId equals co.CId
+                                           join d in db.Departments on co.DId equals d.DId
+                                           join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
+                                           join a in db.Assignments on ac.AcId equals a.AcId
+                                           join su in db.Submissions on a.AId equals su.AId
+                                           where d.Subject == subject && co.Num == num &&
+                                           cl.SemesterSeason == season && cl.SemesterYear == year
+                                           && ac.Name == category && a.AName == asgname && st.UId == uid
+                                           select su;
 
+
+                // Removing the current submission
+                db.Submissions.RemoveRange(getCurrentSubmission);
+                db.SaveChanges();
+
+                // Creating a new 'current' Submission and inserting it into the database
+                Submission sub = new Submission();
+
+                sub.SubId = get_sID.FirstOrDefault();
+                sub.AId = get_aID.FirstOrDefault();
+                sub.Contents = contents;
+                sub.Score = 0;
+                sub.SubmissionTime = DateTime.Now;
+
+                db.Submissions.Add(sub);
+
+                db.SaveChanges();
+
+                return Json(new { success = true });
             }
 
-
-            return Json(new { success = false });
         }
 
 
@@ -197,7 +247,40 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = {true/false}. 
         /// false if the student is already enrolled in the class, true otherwise.</returns>
         public IActionResult Enroll(string subject, int num, string season, int year, string uid)
-        {          
+        {
+            // Checking if a student is already enrolled
+            var enrolled = from st in db.Students
+                           join e in db.Enrolleds on st.SId equals e.SId
+                           join cl in db.Classes on e.ClassId equals cl.ClassId
+                           join co in db.Courses on cl.CId equals co.CId
+                           join d in db.Departments on co.DId equals d.DId
+                           where d.Subject == subject && co.Num == num && cl.SemesterSeason == season
+                           && cl.SemesterYear == year && st.UId == uid
+                           select e;
+
+            if(enrolled.FirstOrDefault() == null)
+            {
+                var get_sID = from st in db.Students
+                              where st.UId == uid
+                              select st.SId;
+
+                var get_classID = from cl in db.Classes
+                                  join co in db.Courses on cl.CId equals co.CId
+                                  join d in db.Departments on co.DId equals d.DId
+                                  where d.Subject == subject && co.Num == num && cl.SemesterSeason == season
+                                  && cl.SemesterYear == year
+                                  select cl.ClassId;
+
+                Enrolled enroll = new Enrolled();
+                enroll.SId = get_sID.FirstOrDefault();
+                enroll.ClassId = get_classID.FirstOrDefault();
+                enroll.Grade = null;
+
+                return Json(new { success = true });
+            }
+
+
+
             return Json(new { success = false});
         }
 
@@ -215,8 +298,54 @@ namespace LMS.Controllers
         /// <param name="uid">The uid of the student</param>
         /// <returns>A JSON object containing a single field called "gpa" with the number value</returns>
         public IActionResult GetGPA(string uid)
-        {            
-            return Json(null);
+        {
+            var grades = from st in db.Students
+                           join e in db.Enrolleds on st.SId equals e.SId
+                           where st.UId == uid
+                           select e.Grade;
+
+            double gpa = 0.0;
+
+            if(grades.FirstOrDefault() == null)
+            {
+                return Json(gpa);
+            }
+            else
+            {
+                int numberOfClasses = grades.Count();
+
+                double GpaSum = 0.0;
+
+                foreach(var grade in grades)
+                {
+                    if (grade.ToUpper() == "A")
+                        GpaSum += 4.0;
+                    else if (grade.ToUpper() == "A-")
+                        GpaSum += 3.7;
+                    else if (grade.ToUpper() == "B+")
+                        GpaSum += 3.3;
+                    else if (grade.ToUpper() == "B")
+                        GpaSum += 3.0;
+                    else if (grade.ToUpper() == "B-")
+                        GpaSum += 2.7;
+                    else if (grade.ToUpper() == "C+")
+                        GpaSum += 2.3;
+                    else if (grade.ToUpper() == "C")
+                        GpaSum += 2.0;
+                    else if (grade.ToUpper() == "D+")
+                        GpaSum += 1.3;
+                    else if (grade.ToUpper() == "D")
+                        GpaSum += 1.0;
+                    else if (grade.ToUpper() == "D-")
+                        GpaSum += 0.7;
+                    else if (grade.ToUpper() == "E")
+                        GpaSum += 0.0;
+                }
+
+                gpa = GpaSum / numberOfClasses;
+
+                return Json(gpa);
+            }
         }
                 
         /*******End code to modify********/
