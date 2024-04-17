@@ -206,26 +206,24 @@ namespace LMS.Controllers
             if (existsInSemester.FirstOrDefault() != null)
                 return Json(new { success = false });
 
+            Class newClass = new Class();
+            newClass.CId = getCId.FirstOrDefault();
+            newClass.SemesterYear = (ushort)year;
+            newClass.SemesterSeason = season;
+            newClass.Location = location;
+            newClass.StartTime = TimeOnly.FromDateTime(start);
+            newClass.EndTime = TimeOnly.FromDateTime(end);
+            //newClass.TaughtBy = ;
 
-            Class cl = new Class();
-            cl.CId = getCId.FirstOrDefault();
-            cl.SemesterSeason = season;
-            cl.SemesterYear = (uint)year;
-            cl.TaughtBy = (uint)int.Parse(instructor.Substring(1));
-            cl.StartTime = TimeOnly.FromDateTime(start);
-            cl.EndTime = TimeOnly.FromDateTime(end);
-            cl.Location = location;
+                db.Classes.Add(newClass);
+                db.SaveChanges();
+                return Json(new { success = true });
+
+            }
 
 
-            db.Classes.Add(cl);
-            db.SaveChanges();
+            /*******End code to modify********/
 
-            return Json(new { success = true});
         }
-
-
-        /*******End code to modify********/
-
-    }
 }
 

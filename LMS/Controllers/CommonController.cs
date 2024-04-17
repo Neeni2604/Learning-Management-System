@@ -105,7 +105,7 @@ namespace LMS.Controllers
                             location = cD.Location,
                             start = cD.StartTime,
                             end = cD.EndTime,
-                            fName = fO.FName,
+                            fname = fO.FName,
                             lname = fO.LName
                         };
 
