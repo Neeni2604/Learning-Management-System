@@ -233,17 +233,21 @@ namespace LMS.Controllers
             }
             else if (db.Students.Any(x => x.UId == uid))
             {
-                var query = from s in db.Students
-                            where s.UId == uid
-                            select new
-                            {
-                                fname = s.FName,
-                                lname = s.LName,
-                                uid = s.UId,
-                                department = s.MajorNavigation.Name
-                            };
+                var student_query = from s in db.Students
+                                    where s.UId == uid
+                                    select new
+                                    {
+                                        fname = s.FName,
+                                        lname = s.LName,
+                                        uid = uid,
+                                        department = s.MajorNavigation.Name
+                                    };
 
-                return Json(query.ToArray());
+                // If there is an entry, then the user is a student
+                if (student_query.Any())
+                {
+                    return Json(student_query.First());
+                }
             }
 
             return Json(new { success = false });
