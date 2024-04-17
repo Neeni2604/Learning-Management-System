@@ -57,21 +57,21 @@ namespace LMS.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetCatalog()
         {
-            var query = from c in db.Courses
-                        join d in db.Departments on c.DId equals d.DId
-                        select new
-                        {
-                            subject = d.Subject,
-                            dname = d.Name,
-                            courses = new
-                            {
-                                number = c.Num,
-                                cname = c.Name
-                            }
-                        };
+           var catalog_query = from d in db.Departments
+                                select new
+                                {
+                                    subject = d.Subject,
+                                    dname = d.Name,
+                                    courses = from c in d.Courses
+                                              select new
+                                              {
+                                                  number = c.Num,
+                                                  cname = c.Name
+                                              }
+                                };
 
-            return Json(query.ToArray());
-        }
+            return Json(catalog_query.ToArray());
+    }
 
         /// <summary>
         /// Returns a JSON array of all class offerings of a specific course.
@@ -226,22 +226,28 @@ namespace LMS.Controllers
                                 uid = p.UId,
                                 department = p.WorksIn
                             };
-
+                var test = query.ToArray();
                 return Json(query.ToArray());
             }
             else if (db.Students.Any(x => x.UId == uid))
             {
-                var query = from s in db.Students
-                            where s.UId == uid
-                            select new
-                            {
-                                fname = s.FName,
-                                lname = s.LName,
-                                uid = s.UId,
-                                department = s.Major
-                            };
+                var student_query = from s in db.Students
+                                    where s.UId == uid
+                                    select new
+                                    {
+                                        fname = s.FName,
+                                        lname = s.LName,
+                                        uid = uid,
+                                        department = s.MajorNavigation.Name
+                                    };
 
-                return Json(query.ToArray());
+                // If there is an entry, then the user is a student
+                if (student_query.Any())
+                {
+                    return Json(student_query.First());
+                }
+
+
             }
 
             return Json(new { success = false });
