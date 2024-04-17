@@ -89,26 +89,21 @@ namespace LMS.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetClassOfferings(string subject, int number)
         {
-            var query = from c in db.Courses
-                        join cc in db.Classes
-                        on c.CId equals cc.CId
-                        into courseClass
-                        from cD in courseClass
-                        join p in db.Professors
-                        on cD.TaughtBy equals p.PId
-                        into fullOffering
-                        from fO in fullOffering
+            var query = from co in db.Courses
+                        join cl in db.Classes on co.CId equals cl.CId
+                        join d in db.Departments on co.DId equals d.DId
+                        join p in db.Professors on d.DId equals p.WorksIn
+                        where d.Subject == subject && co.Num == number
                         select new
                         {
-                            season = cD.SemesterSeason,
-                            year = cD.SemesterYear,
-                            location = cD.Location,
-                            start = cD.StartTime,
-                            end = cD.EndTime,
-                            fname = fO.FName,
-                            lname = fO.LName
+                            season = cl.SemesterSeason,
+                            year = cl.SemesterYear,
+                            location = cl.Location,
+                            start = cl.StartTime,
+                            end = cl.EndTime,
+                            fname = p.FName,
+                            lname = p.LName
                         };
-
             return Json(query.ToArray());
         }
 

@@ -195,6 +195,10 @@ namespace LMS.Controllers
                          where co.Num == number && co.DId == getDId.FirstOrDefault()
                          select co.CId;
 
+            var getPId = from p in db.Professors
+                         where p.UId == instructor
+                         select p.PId;
+
 
             var existsInSemester = from cla in db.Classes
                                    where cla.SemesterSeason == season &&
@@ -213,7 +217,7 @@ namespace LMS.Controllers
             newClass.Location = location;
             newClass.StartTime = TimeOnly.FromDateTime(start);
             newClass.EndTime = TimeOnly.FromDateTime(end);
-            //newClass.TaughtBy = ;
+            newClass.TaughtBy = getPId.FirstOrDefault();
 
                 db.Classes.Add(newClass);
                 db.SaveChanges();
