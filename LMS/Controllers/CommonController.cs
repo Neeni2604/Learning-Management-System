@@ -73,6 +73,8 @@ namespace LMS.Controllers
             return Json(query.ToArray());
         }
 
+
+
         /// <summary>
         /// Returns a JSON array of all class offerings of a specific course.
         /// Each object in the array should have the following fields:
