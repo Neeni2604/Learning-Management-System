@@ -170,26 +170,51 @@ namespace LMS_CustomIdentity.Controllers
 
             int submissionCount = db.Submissions.Count(submission => submission.AId == aID.FirstOrDefault());
 
-            var query = from ac in db.AssignmentCategories
-                        join c in db.Classes
-                        on ac.ClassId equals c.ClassId
-                        join a in db.Assignments
-                        on ac.AcId equals a.AcId
-                        join co in db.Courses
-                        on c.CId equals co.CId
-                        join d in db.Departments
-                        on co.DId equals d.DId
-                        where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year  
-                        //ac.Name == category
-                        select new
-                        {
-                            aname = a.AName,
-                            cname = ac.Name,
-                            due = a.DueDate,
-                            submissions = submissionCount
-                        };
+            if(category == null)
+            {
+                var query = from ac in db.AssignmentCategories
+                            join c in db.Classes
+                            on ac.ClassId equals c.ClassId
+                            join a in db.Assignments
+                            on ac.AcId equals a.AcId
+                            join co in db.Courses
+                            on c.CId equals co.CId
+                            join d in db.Departments
+                            on co.DId equals d.DId
+                            where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year
+                            select new
+                            {
+                                aname = a.AName,
+                                cname = ac.Name,
+                                due = a.DueDate,
+                                submissions = submissionCount
+                            };
 
-            return Json(query.ToArray());
+                return Json(query.ToArray());
+            }
+            else
+            {
+                var query = from ac in db.AssignmentCategories
+                            join c in db.Classes
+                            on ac.ClassId equals c.ClassId
+                            join a in db.Assignments
+                            on ac.AcId equals a.AcId
+                            join co in db.Courses
+                            on c.CId equals co.CId
+                            join d in db.Departments
+                            on co.DId equals d.DId
+                            where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year && ac.Name == category
+                            select new
+                            {
+                                aname = a.AName,
+                                cname = ac.Name,
+                                due = a.DueDate,
+                                submissions = submissionCount
+                            };
+
+                return Json(query.ToArray());
+            }
+            
         }
 
 
