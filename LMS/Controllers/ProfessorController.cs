@@ -189,7 +189,7 @@ namespace LMS_CustomIdentity.Controllers
                         };
 
 
-
+            var test = query.ToArray();
             return Json(query.ToArray());
         }
 
