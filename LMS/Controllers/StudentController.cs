@@ -122,6 +122,7 @@ namespace LMS.Controllers
                         join d in db.Departments on co.DId equals d.DId
                         join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
                         join a in db.Assignments on ac.AcId equals a.AcId
+                        //join s in db.Submissions on a.AId equals s.AId
                         where d.Subject == subject && co.Num == num && cl.SemesterSeason == season &&
                         cl.SemesterYear == year && st.UId == uid
                         select new
@@ -129,7 +130,7 @@ namespace LMS.Controllers
                             aname = a.AName,
                             cname = ac.Name,
                             due = a.DueDate,
-                            score = a.Points
+                            score = a.Submissions.Select(s => s.Score).ToArray()
                         };
 
             return Json(query.ToArray());

@@ -163,12 +163,13 @@ namespace LMS_CustomIdentity.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetAssignmentsInCategory(string subject, int num, string season, int year, string category)
         {
-            var aID = from a in db.Assignments
-                      join s in db.Submissions
-                      on a.AId equals s.AId
-                      select a.AId;
+            //var aID = from a in db.Assignments
+            //join s in db.Submissions
+            //on a.AId equals s.AId
+            //select a.AId;
 
-            int submissionCount = db.Submissions.Count(submission => submission.AId == aID.FirstOrDefault());
+            //int submissionCount = db.Submissions.Count(submission => submission.AId == aID.FirstOrDefault());
+
 
             if(category == null)
             {
@@ -187,7 +188,7 @@ namespace LMS_CustomIdentity.Controllers
                                 aname = a.AName,
                                 cname = ac.Name,
                                 due = a.DueDate,
-                                submissions = submissionCount
+                                submissions = a.Submissions.Count
                             };
 
                 return Json(query.ToArray());
@@ -209,7 +210,7 @@ namespace LMS_CustomIdentity.Controllers
                                 aname = a.AName,
                                 cname = ac.Name,
                                 due = a.DueDate,
-                                submissions = submissionCount
+                                submissions = a.Submissions.Count
                             };
 
                 return Json(query.ToArray());
