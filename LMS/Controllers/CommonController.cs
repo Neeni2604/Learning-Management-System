@@ -92,7 +92,7 @@ namespace LMS.Controllers
             var query = from co in db.Courses
                         join cl in db.Classes on co.CId equals cl.CId
                         join d in db.Departments on co.DId equals d.DId
-                        join p in db.Professors on d.DId equals p.WorksIn
+                        join p in db.Professors on cl.TaughtBy equals p.PId
                         where d.Subject == subject && co.Num == number
                         select new
                         {
@@ -104,6 +104,10 @@ namespace LMS.Controllers
                             fname = p.FName,
                             lname = p.LName
                         };
+
+            if (query.FirstOrDefault() == null)
+                return Json(null);
+
             return Json(query.ToArray());
         }
 
@@ -212,20 +216,18 @@ namespace LMS.Controllers
             }
             else if(db.Professors.Any(x => x.UId == uid))
             {
-                var prof = from p in db.Professors
-                           where p.UId == uid
-                           select new
-                           {
-                               fname = p.FName,
-                               lname = p.LName,
-                               uid,
-                               department = p.WorksIn
-                                    };
-
-                // If there is an entry, then the user is a student
-                if (prof.Any())
+                var query = from p in db.Professors
+                            where p.UId == uid
+                            select new
+                            {
+                                fname = p.FName,
+                                lname = p.LName,
+                                uid = p.UId,
+                                department = p.WorksInNavigation.Name
+                            };
+                if (query.Any())
                 {
-                    return Json(prof.First());
+                    return Json(query.First());
                 }
             }
             else if (db.Students.Any(x => x.UId == uid))
@@ -236,9 +238,9 @@ namespace LMS.Controllers
                                     {
                                         fname = s.FName,
                                         lname = s.LName,
-                                        uid,
+                                        uid = s.UId,
                                         department = s.MajorNavigation.Name
-                                    };
+                                    }; 
 
                 // If there is an entry, then the user is a student
                 if (student_query.Any())

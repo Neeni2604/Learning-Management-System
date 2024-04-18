@@ -117,7 +117,6 @@ namespace LMS.Controllers
                             uid = p.UId
                         };
 
-            
             return Json(query.ToArray());
             
         }
@@ -217,13 +216,13 @@ namespace LMS.Controllers
             newClass.Location = location;
             newClass.StartTime = TimeOnly.FromDateTime(start);
             newClass.EndTime = TimeOnly.FromDateTime(end);
-            newClass.TaughtBy = getPId.FirstOrDefault();
+            newClass.TaughtBy = getPId.First();
 
-                db.Classes.Add(newClass);
-                db.SaveChanges();
-                return Json(new { success = true });
+            db.Classes.Add(newClass);
+            db.SaveChanges();
+            return Json(new { success = true });
 
-            }
+        }
 
 
             /*******End code to modify********/

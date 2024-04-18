@@ -115,23 +115,23 @@ namespace LMS.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetAssignmentsInClass(string subject, int num, string season, int year, string uid)
         {
-            var query = from sub in db.Submissions
-                        join s in db.Students
-                        on sub.SId equals s.SId
-                        join a in db.Assignments
-                        on sub.AId equals a.AId
-                        join ac in db.AssignmentCategories
-                        on a.AcId equals ac.AcId
-                        join c in db.Classes
-                        on ac.ClassId equals c.ClassId
-                        join co in db.Courses
-                        on c.CId equals co.CId
-                        join d in db.Departments
-                        on co.DId equals d.DId
-                        where s.UId == uid && d.Subject == subject && co.Num == num &&
-                              c.SemesterSeason == season && c.SemesterYear == year
-                        select a;
- 
+            var query = from st in db.Students
+                        join e in db.Enrolleds on st.SId equals e.SId
+                        join cl in db.Classes on e.ClassId equals cl.ClassId
+                        join co in db.Courses on cl.CId equals co.CId
+                        join d in db.Departments on co.DId equals d.DId
+                        join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
+                        join a in db.Assignments on ac.AcId equals a.AcId
+                        where d.Subject == subject && co.Num == num && cl.SemesterSeason == season &&
+                        cl.SemesterYear == year && st.UId == uid
+                        select new
+                        {
+                            aname = a.AName,
+                            cname = ac.Name,
+                            due = a.DueDate,
+                            score = a.Points
+                        };
+
             return Json(query.ToArray());
         }
 
@@ -184,7 +184,7 @@ namespace LMS.Controllers
             {
                 Submission sub = new Submission();
 
-                sub.SubId = get_sID.FirstOrDefault();
+                sub.SId = get_sID.FirstOrDefault();
                 sub.AId = get_aID.FirstOrDefault();
                 sub.Contents = contents;
                 sub.Score = 0;
@@ -220,7 +220,7 @@ namespace LMS.Controllers
                 // Creating a new 'current' Submission and inserting it into the database
                 Submission sub = new Submission();
 
-                sub.SubId = get_sID.FirstOrDefault();
+                sub.SId = get_sID.FirstOrDefault();
                 sub.AId = get_aID.FirstOrDefault();
                 sub.Contents = contents;
                 sub.Score = 0;
@@ -281,8 +281,6 @@ namespace LMS.Controllers
 
                 return Json(new { success = true });
             }
-
-
 
             return Json(new { success = false});
         }
