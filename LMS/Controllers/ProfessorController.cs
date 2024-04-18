@@ -179,7 +179,8 @@ namespace LMS_CustomIdentity.Controllers
                         on c.CId equals co.CId
                         join d in db.Departments
                         on co.DId equals d.DId
-                        where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year && ac.Name == category
+                        where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year  
+                        //ac.Name == category
                         select new
                         {
                             aname = a.AName,
@@ -187,8 +188,6 @@ namespace LMS_CustomIdentity.Controllers
                             due = a.DueDate,
                             submissions = submissionCount
                         };
-
-
 
             return Json(query.ToArray());
         }
@@ -222,6 +221,7 @@ namespace LMS_CustomIdentity.Controllers
                             weight = ac.Weight
                         };
 
+            var test = query.ToArray();
             return Json(query.ToArray());
         }
 

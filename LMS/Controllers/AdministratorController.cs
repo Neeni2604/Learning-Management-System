@@ -178,8 +178,9 @@ namespace LMS.Controllers
         public IActionResult CreateClass(string subject, int number, string season, int year, DateTime start, DateTime end, string location, string instructor)
         {     
             var locationTimeConflict = from c in db.Classes
-                                       where c.Location == location && c.SemesterSeason == season && c.SemesterYear == year && ((c.StartTime < TimeOnly.FromDateTime(end) && c.StartTime > TimeOnly.FromDateTime(start)) ||
-                                       (c.EndTime < TimeOnly.FromDateTime(end) && c.EndTime > TimeOnly.FromDateTime(start)))
+                                       where c.Location == location && c.SemesterSeason == season && c.SemesterYear == year && 
+                                       ((c.StartTime <= TimeOnly.FromDateTime(end) && c.StartTime >= TimeOnly.FromDateTime(start)) ||
+                                       (c.EndTime <= TimeOnly.FromDateTime(end) && c.EndTime >= TimeOnly.FromDateTime(start)))
                                        select c;
 
             if (locationTimeConflict.FirstOrDefault() != null)
