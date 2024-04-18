@@ -223,10 +223,12 @@ namespace LMS.Controllers
                                 fname = p.FName,
                                 lname = p.LName,
                                 uid = p.UId,
-                                department = p.WorksIn
+                                department = p.WorksInNavigation.Name
                             };
-                var test = query.ToArray();
-                return Json(query.ToArray());
+                if (query.Any())
+                {
+                    return Json(query.First());
+                }
             }
             else if (db.Students.Any(x => x.UId == uid))
             {
@@ -236,9 +238,9 @@ namespace LMS.Controllers
                                     {
                                         fname = s.FName,
                                         lname = s.LName,
-                                        uid,
+                                        uid = s.UId,
                                         department = s.MajorNavigation.Name
-                                    };
+                                    }; 
 
                 // If there is an entry, then the user is a student
                 if (student_query.Any())

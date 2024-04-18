@@ -189,6 +189,7 @@ namespace LMS_CustomIdentity.Controllers
                         };
 
 
+
             return Json(query.ToArray());
         }
 
@@ -347,9 +348,17 @@ namespace LMS_CustomIdentity.Controllers
                               join cl in db.Classes on ac.ClassId equals cl.ClassId
                               join co in db.Courses on cl.CId equals co.CId
                               join d in db.Departments on co.DId equals d.DId
+                              join st in db.Students on su.SId equals st.SId
                               where d.Subject == subject && co.Num == num && cl.SemesterSeason == season &&
                               cl.SemesterYear == year && ac.Name == category && a.AName == asgname
-                              select su;
+                              select new 
+                              {
+                                  fname = st.FName,
+                                  lname = st.LName,
+                                  uid = st.UId,
+                                  time = su.SubmissionTime,
+                                  score = su.Score
+                              };
 
             if(submissions.First() != null)
             {
