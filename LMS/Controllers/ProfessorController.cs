@@ -345,7 +345,7 @@ namespace LMS_CustomIdentity.Controllers
                 db.Assignments.Add(newAssignment);
                 db.SaveChanges();
 
-                //updateStudentGrade()
+                //updateStudentGrade(
 
                 return Json(new { success = true });
             }
@@ -461,8 +461,11 @@ namespace LMS_CustomIdentity.Controllers
 
             double totalCount = 0;
             double currentCount = 0;
+            double currentCategoryTotal = 0;
 
             foreach (var ac in acArray) {
+                currentCount = 0;
+                currentCategoryTotal = 0;
                 var submissionScores = from su in db.Submissions
                                   join st in db.Students on su.SId equals st.SId
                                   join a in db.Assignments on su.AId equals a.AId
@@ -473,14 +476,19 @@ namespace LMS_CustomIdentity.Controllers
                 {
                     currentCount += score;
                 }
-                totalCount += ac.weight * currentCount;
+
+                var totalAssignments = from a in db.Assignments
+                                       where a.AcId == ac.acid
+                                       select a.Points;
+
+                foreach (int assignment in totalAssignments) 
+                {
+                    currentCategoryTotal += assignment;
+                }
+
+                totalCount += (currentCount / currentCategoryTotal) * ac.weight * .01;
             }
 
-            //string input = uid;
-            //string numericPart = input.Substring(1); // Remove the leading "u"
-            //uint result;
-
-            //uint.TryParse(numericPart, out result);
 
             var enrolledEntry = from e in db.Enrolleds
                                 where e.SId == sid && e.ClassId == classId
