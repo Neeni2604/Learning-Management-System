@@ -37,7 +37,7 @@
         dataType: 'json',
         data: { uid: '@User.Identity.Name' },
         success: function (data, status) {
-             alert(JSON.stringify(data));
+            // alert(JSON.stringify(data));
 
 
           if (data.success == false) {
@@ -63,9 +63,14 @@
       $.ajax({
         type: 'POST',
         url: '@Url.Action("GetGPA", "Student")',
+        
         dataType: 'json',
         data: { uid: '@User.Identity.Name' },
-        success: function (data, status) {
+          success: function (data, status) 
+         { 
+        alert(JSON.stringify(data));
+
+        
 
           GPA.innerText = "GPA: " + Number.parseFloat(data.gpa).toFixed(1);
 
@@ -83,7 +88,7 @@
         data: { uid: '@User.Identity.Name' },
         success: function (data, status) {
 
-          alert(JSON.stringify(data));
+         // alert(JSON.stringify(data));
 
           $.each(data, function (i, item) {
 

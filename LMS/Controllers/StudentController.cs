@@ -306,15 +306,17 @@ namespace LMS.Controllers
                            where st.UId == uid
                            select e.Grade;
 
-            double gpa = 0.0;
+            double gpaValue = 0.0;
+            var test = grades.ToArray();
 
             if(grades.FirstOrDefault() == null)
             {
-                return Json(gpa);
+                var jsonObject = new { gpa = gpaValue };
+                return Json(jsonObject);
             }
             else
             {
-                int numberOfClasses = grades.Count();
+                double numberOfClasses = grades.Count();
 
                 double GpaSum = 0.0;
 
@@ -344,9 +346,13 @@ namespace LMS.Controllers
                         GpaSum += 0.0;
                 }
 
-                gpa = GpaSum / numberOfClasses;
+                gpaValue = GpaSum / numberOfClasses;
 
-                return Json(gpa);
+                var jsonObject = new { gpa = gpaValue };
+
+                
+
+                return Json(jsonObject);
             }
         }
                 
