@@ -414,7 +414,7 @@ namespace LMS_CustomIdentity.Controllers
                             join d in db.Departments on p.WorksIn equals d.DId
                             join co in db.Courses on d.DId equals co.DId
                             join cl in db.Classes on co.CId equals cl.CId
-                            where p.UId == uid
+                            where p.UId == uid && p.PId == cl.TaughtBy
                             select new
                             {
                                 subject = d.Subject,

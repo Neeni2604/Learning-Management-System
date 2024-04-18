@@ -92,7 +92,7 @@ namespace LMS.Controllers
             var query = from co in db.Courses
                         join cl in db.Classes on co.CId equals cl.CId
                         join d in db.Departments on co.DId equals d.DId
-                        join p in db.Professors on d.DId equals p.WorksIn
+                        join p in db.Professors on cl.TaughtBy equals p.PId
                         where d.Subject == subject && co.Num == number
                         select new
                         {
@@ -104,6 +104,10 @@ namespace LMS.Controllers
                             fname = p.FName,
                             lname = p.LName
                         };
+
+            if (query.FirstOrDefault() == null)
+                return Json(null);
+
             return Json(query.ToArray());
         }
 
