@@ -132,14 +132,14 @@ namespace LMS_CustomIdentity.Controllers
                         where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year
                         select new
                         {
-                            fName = s.FName,
-                            lName = s.LName,
+                            fname = s.FName,
+                            lname = s.LName,
                             uid = s.UId,
                             dob = s.Dob,
                             grade = e.Grade
                         };
 
-
+            var test = query.ToArray();
             return Json(query.ToArray());
         }
 
