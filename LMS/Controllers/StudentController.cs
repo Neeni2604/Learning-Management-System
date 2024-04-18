@@ -274,7 +274,10 @@ namespace LMS.Controllers
                 Enrolled enroll = new Enrolled();
                 enroll.SId = get_sID.FirstOrDefault();
                 enroll.ClassId = get_classID.FirstOrDefault();
-                enroll.Grade = null;
+                enroll.Grade = "";
+
+                db.Enrolleds.Add(enroll);
+                db.SaveChanges();
 
                 return Json(new { success = true });
             }

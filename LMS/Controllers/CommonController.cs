@@ -232,7 +232,7 @@ namespace LMS.Controllers
                                     {
                                         fname = s.FName,
                                         lname = s.LName,
-                                        uid = uid,
+                                        uid,
                                         department = s.MajorNavigation.Name
                                     };
 
