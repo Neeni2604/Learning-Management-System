@@ -212,17 +212,21 @@ namespace LMS.Controllers
             }
             else if(db.Professors.Any(x => x.UId == uid))
             {
-                var query = from p in db.Professors
-                            where p.UId == uid
-                            select new
-                            {
-                                fname = p.FName,
-                                lname = p.LName,
-                                uid = p.UId,
-                                department = p.WorksIn
-                            };
-                var test = query.ToArray();
-                return Json(query.ToArray());
+                var prof = from p in db.Professors
+                           where p.UId == uid
+                           select new
+                           {
+                               fname = p.FName,
+                               lname = p.LName,
+                               uid,
+                               department = p.WorksIn
+                                    };
+
+                // If there is an entry, then the user is a student
+                if (prof.Any())
+                {
+                    return Json(prof.First());
+                }
             }
             else if (db.Students.Any(x => x.UId == uid))
             {
