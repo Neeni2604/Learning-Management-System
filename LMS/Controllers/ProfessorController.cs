@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
@@ -163,34 +164,60 @@ namespace LMS_CustomIdentity.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetAssignmentsInCategory(string subject, int num, string season, int year, string category)
         {
-            var aID = from a in db.Assignments
-                      join s in db.Submissions
-                      on a.AId equals s.AId
-                      select a.AId;
+            //var aID = from a in db.Assignments
+            //join s in db.Submissions
+            //on a.AId equals s.AId
+            //select a.AId;
 
-            int submissionCount = db.Submissions.Count(submission => submission.AId == aID.FirstOrDefault());
-
-            var query = from ac in db.AssignmentCategories
-                        join c in db.Classes
-                        on ac.ClassId equals c.ClassId
-                        join a in db.Assignments
-                        on ac.AcId equals a.AcId
-                        join co in db.Courses
-                        on c.CId equals co.CId
-                        join d in db.Departments
-                        on co.DId equals d.DId
-                        where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year && ac.Name == category
-                        select new
-                        {
-                            aname = a.AName,
-                            cname = ac.Name,
-                            due = a.DueDate,
-                            submissions = submissionCount
-                        };
+            //int submissionCount = db.Submissions.Count(submission => submission.AId == aID.FirstOrDefault());
 
 
-            var test = query.ToArray();
-            return Json(query.ToArray());
+           
+            if(category == null)
+            {
+                var query = from ac in db.AssignmentCategories
+                            join c in db.Classes
+                            on ac.ClassId equals c.ClassId
+                            join a in db.Assignments
+                            on ac.AcId equals a.AcId
+                            join co in db.Courses
+                            on c.CId equals co.CId
+                            join d in db.Departments
+                            on co.DId equals d.DId
+                            where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year
+                            select new
+                            {
+                                aname = a.AName,
+                                cname = ac.Name,
+                                due = a.DueDate,
+                                submissions = a.Submissions.Count
+                            };
+
+                return Json(query.ToArray());
+            }
+            else
+            {
+                var query = from ac in db.AssignmentCategories
+                            join c in db.Classes
+                            on ac.ClassId equals c.ClassId
+                            join a in db.Assignments
+                            on ac.AcId equals a.AcId
+                            join co in db.Courses
+                            on c.CId equals co.CId
+                            join d in db.Departments
+                            on co.DId equals d.DId
+                            where d.Subject == subject && co.Num == num && c.SemesterSeason == season && c.SemesterYear == year && ac.Name == category
+                            select new
+                            {
+                                aname = a.AName,
+                                cname = ac.Name,
+                                due = a.DueDate,
+                                submissions = a.Submissions.Count
+                            };
+
+                return Json(query.ToArray());
+            }
+            
         }
 
 
@@ -222,6 +249,7 @@ namespace LMS_CustomIdentity.Controllers
                             weight = ac.Weight
                         };
 
+            var test = query.ToArray();
             return Json(query.ToArray());
         }
 
@@ -317,6 +345,8 @@ namespace LMS_CustomIdentity.Controllers
                 db.Assignments.Add(newAssignment);
                 db.SaveChanges();
 
+                //updateStudentGrade()
+
                 return Json(new { success = true });
             }
             return Json(new { success = false });
@@ -394,15 +424,99 @@ namespace LMS_CustomIdentity.Controllers
                              st.UId == uid
                              select su;
 
+            var classID = from d in db.Departments
+                          join co in db.Courses on d.DId equals co.DId
+                          join cl in db.Classes on co.CId equals cl.CId
+                          where d.Subject == subject && co.Num == num && cl.SemesterSeason == season &&
+                          cl.SemesterYear == year
+                          select cl.ClassId;
+
             if(submission.FirstOrDefault() != null)
             {
                 submission.ToArray()[0].Score = (uint)score;
                 db.SaveChanges();
 
+                var sID = (from st in db.Students
+                           where st.UId == uid
+                           select st.SId).FirstOrDefault();
+
+                updateStudentGrade(uid, sID, classID.FirstOrDefault());
+
                 return Json(new { success = true });
             }
 
             return Json(new { success = false });
+        }
+
+        private void updateStudentGrade(string uid, uint sid, uint classId)
+        {
+            var assignmentcategories = from cl in db.Classes
+                                       join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
+                                       select new
+                                       {
+                                           acid = ac.AcId,
+                                           weight = ac.Weight
+                                       };
+            var acArray = assignmentcategories.ToArray();
+
+            double totalCount = 0;
+            double currentCount = 0;
+
+            foreach (var ac in acArray) {
+                var submissionScores = from su in db.Submissions
+                                  join st in db.Students on su.SId equals st.SId
+                                  join a in db.Assignments on su.AId equals a.AId
+                                  where a.AcId == ac.acid
+                                  select su.Score;
+
+                foreach (var score in submissionScores)
+                {
+                    currentCount += score;
+                }
+                totalCount += ac.weight * currentCount;
+            }
+
+            //string input = uid;
+            //string numericPart = input.Substring(1); // Remove the leading "u"
+            //uint result;
+
+            //uint.TryParse(numericPart, out result);
+
+            var enrolledEntry = from e in db.Enrolleds
+                                where e.SId == sid && e.ClassId == classId
+                                select e;
+
+            var usefulEnrolled = enrolledEntry.FirstOrDefault();
+
+            if (totalCount >= 93)
+                usefulEnrolled.Grade = "A";
+            else if (totalCount >= 90)
+                usefulEnrolled.Grade = "A-";
+            else if (totalCount >= 87)
+                usefulEnrolled.Grade = "B+";
+            else if (totalCount >= 83)
+                usefulEnrolled.Grade = "B";
+            else if (totalCount >= 80)
+                usefulEnrolled.Grade = "B-";
+            else if (totalCount >= 77)
+                usefulEnrolled.Grade = "C+";
+            else if (totalCount >= 73)
+                usefulEnrolled.Grade = "C";
+            else if (totalCount >= 70)
+                usefulEnrolled.Grade = "C-";
+            else if (totalCount >= 67)
+                usefulEnrolled.Grade = "D+";
+            else if (totalCount >= 63)
+                usefulEnrolled.Grade = "D";
+            else if (totalCount >= 60)
+                usefulEnrolled.Grade = "D-";
+            else
+                usefulEnrolled.Grade = "E";
+
+
+            db.SaveChanges();
+            
+
         }
 
 
