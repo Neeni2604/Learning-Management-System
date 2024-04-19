@@ -164,15 +164,6 @@ namespace LMS_CustomIdentity.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetAssignmentsInCategory(string subject, int num, string season, int year, string category)
         {
-            //var aID = from a in db.Assignments
-            //join s in db.Submissions
-            //on a.AId equals s.AId
-            //select a.AId;
-
-            //int submissionCount = db.Submissions.Count(submission => submission.AId == aID.FirstOrDefault());
-
-
-           
             if(category == null)
             {
                 var query = from ac in db.AssignmentCategories

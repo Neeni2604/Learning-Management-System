@@ -130,7 +130,9 @@ namespace LMS.Controllers
                             aname = a.AName,
                             cname = ac.Name,
                             due = a.DueDate,
-                            score = a.Submissions.Select(s => s.Score).ToArray()
+                            score = from s in a.Submissions where s.SIdNavigation.UId == uid 
+                                    select s.Score
+                                    
                         };
 
             return Json(query.ToArray());
