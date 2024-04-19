@@ -358,7 +358,7 @@ namespace LMS_CustomIdentity.Controllers
 
                 foreach (var stu in allStudentsInClass)
                 {
-                    updateStudentGrade(stu, classID);
+              //      updateStudentGrade(stu, classID);
                 }
 
 
@@ -500,7 +500,7 @@ namespace LMS_CustomIdentity.Controllers
                     currentCategoryTotal += assignment;
                 }
 
-                totalCount += (currentCount / currentCategoryTotal) * ac.weight * .01;
+                totalCount += (currentCount / currentCategoryTotal) * ac.weight;
             }
 
 
