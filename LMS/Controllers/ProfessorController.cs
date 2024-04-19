@@ -345,7 +345,22 @@ namespace LMS_CustomIdentity.Controllers
                 db.Assignments.Add(newAssignment);
                 db.SaveChanges();
 
-                //updateStudentGrade(
+                var allStudentsInClass = from cl in db.Classes
+                                         join co in db.Courses on cl.CId equals co.CId
+                                         join d in db.Departments on co.DId equals d.DId
+                                         join e in db.Enrolleds on cl.ClassId equals e.ClassId
+                                         select e.SId;
+
+                var classID = (from cl in db.Classes
+                               join co in db.Courses on cl.CId equals co.CId
+                               join d in db.Departments on co.DId equals d.DId
+                               select cl.ClassId).FirstOrDefault();
+
+                foreach (var stu in allStudentsInClass)
+                {
+                    updateStudentGrade(stu, classID);
+                }
+
 
                 return Json(new { success = true });
             }
@@ -440,7 +455,7 @@ namespace LMS_CustomIdentity.Controllers
                            where st.UId == uid
                            select st.SId).FirstOrDefault();
 
-                updateStudentGrade(uid, sID, classID.FirstOrDefault());
+                updateStudentGrade(sID, classID.FirstOrDefault());
 
                 return Json(new { success = true });
             }
@@ -448,22 +463,21 @@ namespace LMS_CustomIdentity.Controllers
             return Json(new { success = false });
         }
 
-        private void updateStudentGrade(string uid, uint sid, uint classId)
+        private void updateStudentGrade(uint sid, uint classId)
         {
-            var assignmentcategories = from cl in db.Classes
-                                       join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
-                                       select new
-                                       {
-                                           acid = ac.AcId,
-                                           weight = ac.Weight
-                                       };
-            var acArray = assignmentcategories.ToArray();
+            var assignmentcategories = (from cl in db.Classes
+                                        join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
+                                        select new
+                                        {
+                                            acid = ac.AcId,
+                                            weight = ac.Weight
+                                        }).ToArray();
 
             double totalCount = 0;
             double currentCount = 0;
             double currentCategoryTotal = 0;
 
-            foreach (var ac in acArray) {
+            foreach (var ac in assignmentcategories) {
                 currentCount = 0;
                 currentCategoryTotal = 0;
                 var submissionScores = from su in db.Submissions
