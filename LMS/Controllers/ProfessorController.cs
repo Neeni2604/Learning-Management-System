@@ -340,18 +340,21 @@ namespace LMS_CustomIdentity.Controllers
                                          join co in db.Courses on cl.CId equals co.CId
                                          join d in db.Departments on co.DId equals d.DId
                                          join e in db.Enrolleds on cl.ClassId equals e.ClassId
+                                         where d.Subject == subject && co.Num == num && 
+                                         cl.SemesterSeason == season && cl.SemesterYear == year 
                                          select e.SId;
 
                 var classID = (from cl in db.Classes
                                join co in db.Courses on cl.CId equals co.CId
                                join d in db.Departments on co.DId equals d.DId
+                               where cl.SemesterSeason == season && cl.SemesterYear == year &&
+                               co.Num == num && d.Subject == subject
                                select cl.ClassId).FirstOrDefault();
 
-                foreach (var stu in allStudentsInClass)
+                foreach (var stu in (allStudentsInClass).ToArray())
                 {
-              //      updateStudentGrade(stu, classID);
+                    updateStudentGrade(stu, classID);
                 }
-
 
                 return Json(new { success = true });
             }
@@ -458,6 +461,7 @@ namespace LMS_CustomIdentity.Controllers
         {
             var assignmentcategories = (from cl in db.Classes
                                         join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
+                                        where ac.ClassId == classId
                                         select new
                                         {
                                             acid = ac.AcId,
@@ -474,7 +478,7 @@ namespace LMS_CustomIdentity.Controllers
                 var submissionScores = from su in db.Submissions
                                   join st in db.Students on su.SId equals st.SId
                                   join a in db.Assignments on su.AId equals a.AId
-                                  where a.AcId == ac.acid
+                                  where a.AcId == ac.acid && st.SId == sid
                                   select su.Score;
 
                 foreach (var score in submissionScores)
@@ -528,7 +532,6 @@ namespace LMS_CustomIdentity.Controllers
 
 
             db.SaveChanges();
-            
 
         }
 

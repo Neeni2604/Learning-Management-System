@@ -130,8 +130,8 @@ namespace LMS.Controllers
                             aname = a.AName,
                             cname = ac.Name,
                             due = a.DueDate,
-                            score = from s in a.Submissions where s.SIdNavigation.UId == uid 
-                                    select s.Score
+                            score = (from s in a.Submissions where s.SIdNavigation.UId == uid 
+                                    select  s.Score ).FirstOrDefault()
                                     
                         };
 
@@ -277,7 +277,7 @@ namespace LMS.Controllers
                 Enrolled enroll = new Enrolled();
                 enroll.SId = get_sID.FirstOrDefault();
                 enroll.ClassId = get_classID.FirstOrDefault();
-                enroll.Grade = "";
+                enroll.Grade = "--";
 
                 db.Enrolleds.Add(enroll);
                 db.SaveChanges();
