@@ -202,22 +202,23 @@ namespace LMS.Controllers
             else
             {
                 // Getting the current submission
-                var getCurrentSubmission = from st in db.Students
-                                           join e in db.Enrolleds on st.SId equals e.SId
-                                           join cl in db.Classes on e.ClassId equals cl.ClassId
-                                           join co in db.Courses on cl.CId equals co.CId
-                                           join d in db.Departments on co.DId equals d.DId
-                                           join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
-                                           join a in db.Assignments on ac.AcId equals a.AcId
-                                           join su in db.Submissions on a.AId equals su.AId
-                                           where d.Subject == subject && co.Num == num &&
-                                           cl.SemesterSeason == season && cl.SemesterYear == year
-                                           && ac.Name == category && a.AName == asgname && st.UId == uid
-                                           select su;
+                //var getCurrentSubmission = from st in db.Students
+                //                           join e in db.Enrolleds on st.SId equals e.SId
+                //                           join cl in db.Classes on e.ClassId equals cl.ClassId
+                //                           join co in db.Courses on cl.CId equals co.CId
+                //                           join d in db.Departments on co.DId equals d.DId
+                //                           join ac in db.AssignmentCategories on cl.ClassId equals ac.ClassId
+                //                           join a in db.Assignments on ac.AcId equals a.AcId
+                //                           join su in db.Submissions on a.AId equals su.AId
+                //                           where d.Subject == subject && co.Num == num &&
+                //                           cl.SemesterSeason == season && cl.SemesterYear == year
+                //                           && ac.Name == category && a.AName == asgname && st.UId == uid
+                //                           select su;
+
 
 
                 // Removing the current submission
-                db.Submissions.RemoveRange(getCurrentSubmission);
+                db.Submissions.RemoveRange(submitted);
                 db.SaveChanges();
 
                 // Creating a new 'current' Submission and inserting it into the database
